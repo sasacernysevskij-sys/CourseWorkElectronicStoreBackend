@@ -27,7 +27,7 @@ public class AuthController : ControllerBase
             UserName = request.UserName,
             Role = "User",
             RegisterDate = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            UserBornDate = request.UserBornDate ?? "2000-01-01",
+            UserBornDate = request.UserBornDate,
             Status = "Active"
         };
         user.PasswordHash = _hasher.HashPassword(user, request.Password);
