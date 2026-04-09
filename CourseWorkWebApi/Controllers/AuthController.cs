@@ -9,7 +9,6 @@ public class AuthController : ControllerBase
     private readonly AppDbContext _db;
     private readonly JwtTokenService _jwt;
     private readonly PasswordHasher<User> _hasher = new();
-
     public AuthController(AppDbContext db, JwtTokenService jwt)
     {
         _db = db;
@@ -24,7 +23,7 @@ public class AuthController : ControllerBase
         var user = new User
         {
             UserName = request.UserName,
-            Role = "Admin",
+            Role = "User",
             RegisterDate = DateTime.UtcNow,
             UserBornDate = request.UserBornDate,
             Status = "Active"
@@ -40,6 +39,8 @@ public class AuthController : ControllerBase
         var user = _db.Users.FirstOrDefault(u => u.UserName == request.UserName);
         if (user == null)
             return Unauthorized();
+        if (user.Status == "Inactive")
+            return Unauthorized("You are banned");
         var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
         if (result == PasswordVerificationResult.Failed)
             return Unauthorized();
@@ -52,32 +53,23 @@ public class AuthController : ControllerBase
             role = user.Role
         });
     }
-    [Authorize] // Обязательно, чтобы пользователь был авторизован
+    [Authorize]
     [HttpPost("change-password")]
     public IActionResult ChangePassword(ChangePasswordRequest request)
     {
-        // Получаем UserId из токена
         var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
         if (userIdClaim == null)
             return Unauthorized("UserId not found in token");
-
         if (!int.TryParse(userIdClaim.Value, out int userId))
             return Unauthorized("Invalid UserId in token");
-
-        // Ищем пользователя по Id
         var user = _db.Users.FirstOrDefault(u => u.Id == userId);
         if (user == null)
             return NotFound("User not found");
-
-        // Проверяем старый пароль
         var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, request.OldPassword);
         if (result == PasswordVerificationResult.Failed)
             return BadRequest("Old password is incorrect");
-
-        // Хэшируем новый пароль и сохраняем
         user.PasswordHash = _hasher.HashPassword(user, request.NewPassword);
         _db.SaveChanges();
-
         return Ok("Password changed successfully");
     }
 }
