@@ -1,6 +1,9 @@
-﻿public class RegisterRequest
+﻿using System.ComponentModel.DataAnnotations;
+public class RegisterRequest
 {
+    [MaxLength(50)]
     public string UserName { get; set; }
+    [MaxLength(50)]
     public string Password { get; set; }
-    public string UserBornDate { get; set; }
+    public DateTime UserBornDate { get; set; }
 }

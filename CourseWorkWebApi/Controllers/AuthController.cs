@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
-
+using Microsoft.AspNetCore.Authorization;
 namespace ElectronicStore.Controllers;
-
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
@@ -17,7 +16,7 @@ public class AuthController : ControllerBase
         _jwt = jwt;
     }
 
-    [HttpPost("register")]
+    [HttpPost("register")]//1
     public IActionResult Register(RegisterRequest request)
     {
         if (_db.Users.Any(u => u.UserName == request.UserName))
@@ -25,8 +24,8 @@ public class AuthController : ControllerBase
         var user = new User
         {
             UserName = request.UserName,
-            Role = "User",
-            RegisterDate = DateTime.UtcNow.ToString("yyyy-MM-dd"),
+            Role = "Admin",
+            RegisterDate = DateTime.UtcNow,
             UserBornDate = request.UserBornDate,
             Status = "Active"
         };
@@ -36,7 +35,7 @@ public class AuthController : ControllerBase
         return Ok();
     }
     [HttpPost("login")]
-    public IActionResult Login(LoginRequest request)
+    public IActionResult Login(LoginRequest request)//8
     {
         var user = _db.Users.FirstOrDefault(u => u.UserName == request.UserName);
         if (user == null)
@@ -44,7 +43,7 @@ public class AuthController : ControllerBase
         var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
         if (result == PasswordVerificationResult.Failed)
             return Unauthorized();
-        var token = _jwt.GenerateToken(user.UserName, user.Role);
+        var token = _jwt.GenerateToken(user.Id ,user.UserName, user.Role);
         return Ok(new
         {
             token,
@@ -52,5 +51,33 @@ public class AuthController : ControllerBase
             bornDate = user.UserBornDate,
             role = user.Role
         });
+    }
+    [Authorize] // Обязательно, чтобы пользователь был авторизован
+    [HttpPost("change-password")]
+    public IActionResult ChangePassword(ChangePasswordRequest request)
+    {
+        // Получаем UserId из токена
+        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+        if (userIdClaim == null)
+            return Unauthorized("UserId not found in token");
+
+        if (!int.TryParse(userIdClaim.Value, out int userId))
+            return Unauthorized("Invalid UserId in token");
+
+        // Ищем пользователя по Id
+        var user = _db.Users.FirstOrDefault(u => u.Id == userId);
+        if (user == null)
+            return NotFound("User not found");
+
+        // Проверяем старый пароль
+        var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, request.OldPassword);
+        if (result == PasswordVerificationResult.Failed)
+            return BadRequest("Old password is incorrect");
+
+        // Хэшируем новый пароль и сохраняем
+        user.PasswordHash = _hasher.HashPassword(user, request.NewPassword);
+        _db.SaveChanges();
+
+        return Ok("Password changed successfully");
     }
 }
