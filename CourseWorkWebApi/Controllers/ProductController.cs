@@ -64,24 +64,20 @@ public class ProductsController : ControllerBase
     string? brand = null
 )
     {
-        var query = _db.Products.AsQueryable();
+        var query = _db.Products
+            .Where(p => p.Status == "Active")
+            .AsQueryable();
 
-        // FILTER TYPE
         if (!string.IsNullOrWhiteSpace(type))
         {
             query = query.Where(p => p.Type.ToLower() == type.ToLower());
         }
 
-        // FILTER BRAND
         if (!string.IsNullOrWhiteSpace(brand))
         {
             query = query.Where(p => p.TradeMark.ToLower() == brand.ToLower());
         }
-
-        // TOTAL COUNT (before pagination)
         var totalItems = query.Count();
-
-        // PAGINATION (SLICE)
         var items = query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
