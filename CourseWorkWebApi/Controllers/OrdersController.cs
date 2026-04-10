@@ -9,7 +9,6 @@ namespace ElectronicStore.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly AppDbContext _db;
-
     public OrdersController(AppDbContext db)
     {
         _db = db;
@@ -57,13 +56,12 @@ public class OrdersController : ControllerBase
         });
     }
     [Authorize(Roles = "Admin")]
-    [HttpGet("GetAllProduct")]
-    public IActionResult GetAll()
+    [HttpGet("GetAllProducts")]
+    public IActionResult GetAllProducts()
     {
         var orders = _db.Orders
             .Where(o => o.Status == "Active")
             .ToList();
-
         return Ok(orders);
     }
     [Authorize(Roles = "Admin")]
@@ -72,10 +70,8 @@ public class OrdersController : ControllerBase
     {
         var order = _db.Orders.FirstOrDefault(o => o.Id == id);
         if (order == null) return NotFound();
-
         order.Status = "Inactive";
         _db.SaveChanges();
-
         return Ok($"Order {id} removed");
     }
 }

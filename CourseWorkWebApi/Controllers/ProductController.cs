@@ -64,4 +64,30 @@ public class ProductsController : ControllerBase
         _db.SaveChanges();
         return Ok(product);
     }
+    [HttpGet]
+    public IActionResult GetProductsBySlice(int page = 1, int pageSize = 8)
+    {
+        var query = _db.Products
+            .Where(p => p.Status == "Active");
+
+        var totalCount = query.Count();
+
+        var items = query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new
+            {
+                p.Id,
+                p.Name,
+                p.Price,
+                p.PictureProduct
+            })
+            .ToList();
+
+        return Ok(new
+        {
+            items,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
+    }
 }

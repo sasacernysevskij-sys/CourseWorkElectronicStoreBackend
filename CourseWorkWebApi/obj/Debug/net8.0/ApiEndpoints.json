@@ -81,12 +81,33 @@
   },
   {
     "ContainingType": "ElectronicStore.Controllers.OrdersController",
-    "Method": "GetAll",
-    "RelativePath": "api/orders/GetAllProduct",
+    "Method": "GetAllProducts",
+    "RelativePath": "api/orders/GetAllProducts",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ElectronicStore.Controllers.ProductsController",
+    "Method": "GetProductsBySlice",
+    "RelativePath": "api/products",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {

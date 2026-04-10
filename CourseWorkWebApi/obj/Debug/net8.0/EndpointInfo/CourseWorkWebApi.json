@@ -129,7 +129,7 @@
         }
       }
     },
-    "/api/orders/GetAllProduct": {
+    "/api/orders/GetAllProducts": {
       "get": {
         "tags": [
           "Orders"
@@ -262,6 +262,38 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 8
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success"

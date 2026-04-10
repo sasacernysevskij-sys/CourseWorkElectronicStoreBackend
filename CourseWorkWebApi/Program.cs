@@ -5,13 +5,29 @@ using Microsoft.OpenApi;
 using System.Security.Claims;
 using System.Text;
 using OpenApiModels = Microsoft.OpenApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// ==================== 1?? Services ====================
+
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(o =>
     o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 builder.Services.AddScoped<JwtTokenService>();
-// jwtuthentication
+
+// CORS дл€ фронтенда
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+// JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -36,8 +52,10 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.FromMinutes(5)
     };
 });
+
 builder.Services.AddAuthorization();
-// Swagger and Authorize button
+
+// Swagger + JWT support
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiModels.OpenApiSecurityScheme
@@ -64,11 +82,26 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+// ==================== 2?? Build app ====================
+
 var app = builder.Build();
+
+// ==================== 3?? Middleware pipeline ====================
+
+// HTTPS редирект (опционально)
+// app.UseHttpsRedirection();
+
+// CORS Ч важно подключать до Authentication/Authorization
+app.UseCors("AllowFrontend");
+
 app.UseSwagger();
 app.UseSwaggerUI();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.UseStaticFiles();
 app.MapControllers();
+
 app.Run();
