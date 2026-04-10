@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 namespace ElectronicStore.Controllers;
 [ApiController]
 [Route("api/products")]
@@ -29,15 +30,6 @@ public class ProductsController : ControllerBase
         _db.SaveChanges();
         return Ok(product);
     }
-    [HttpGet("all")]
-    public IActionResult GetAllProduct()
-    {
-        var products = _db.Products
-            .Where(p => p.Status == "Active")
-            .ToList();
-
-        return Ok(products);
-    }
     [Authorize(Roles = "Admin")]
     [HttpDelete("deleteProduct")]
     public IActionResult DeleteProduct(int id)
@@ -65,29 +57,43 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
     [HttpGet]
-    public IActionResult GetProductsBySlice(int page = 1, int pageSize = 8)
+    public IActionResult GetProducts(
+    int page = 1,
+    int pageSize = 8,
+    string? type = null,
+    string? brand = null
+)
     {
-        var query = _db.Products
-            .Where(p => p.Status == "Active");
+        var query = _db.Products.AsQueryable();
 
-        var totalCount = query.Count();
+        // FILTER TYPE
+        if (!string.IsNullOrWhiteSpace(type))
+        {
+            query = query.Where(p => p.Type.ToLower() == type.ToLower());
+        }
 
+        // FILTER BRAND
+        if (!string.IsNullOrWhiteSpace(brand))
+        {
+            query = query.Where(p => p.TradeMark.ToLower() == brand.ToLower());
+        }
+
+        // TOTAL COUNT (before pagination)
+        var totalItems = query.Count();
+
+        // PAGINATION (SLICE)
         var items = query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(p => new
-            {
-                p.Id,
-                p.Name,
-                p.Price,
-                p.PictureProduct
-            })
             .ToList();
 
         return Ok(new
         {
-            items,
-            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            data = items,
+            totalItems = totalItems,
+            totalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
+            currentPage = page
         });
     }
+
 }

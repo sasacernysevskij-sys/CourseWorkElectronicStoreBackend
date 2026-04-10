@@ -194,18 +194,6 @@
         }
       }
     },
-    "/api/products/all": {
-      "get": {
-        "tags": [
-          "Products"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
     "/api/products/deleteProduct": {
       "delete": {
         "tags": [
@@ -291,6 +279,20 @@
               "type": "integer",
               "format": "int32",
               "default": 8
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],

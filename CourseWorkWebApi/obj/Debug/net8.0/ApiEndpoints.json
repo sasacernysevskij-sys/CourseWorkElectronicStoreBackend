@@ -91,7 +91,7 @@
   },
   {
     "ContainingType": "ElectronicStore.Controllers.ProductsController",
-    "Method": "GetProductsBySlice",
+    "Method": "GetProducts",
     "RelativePath": "api/products",
     "HttpMethod": "GET",
     "IsController": true,
@@ -106,18 +106,18 @@
         "Name": "pageSize",
         "Type": "System.Int32",
         "IsRequired": false
+      },
+      {
+        "Name": "type",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "brand",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "ElectronicStore.Controllers.ProductsController",
-    "Method": "GetAllProduct",
-    "RelativePath": "api/products/all",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
     "ReturnTypes": []
   },
   {
